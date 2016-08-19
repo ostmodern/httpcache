@@ -30,7 +30,7 @@ packages = ['httpcache']
 requires = ['requests>=1.2.0']
 
 setup(
-    name='httpcache',
+    name='ost_httpcache',
     version=version,
     description='Simple HTTP cache for Python Requests',
     long_description=open('README.rst').read() + '\n\n' +
