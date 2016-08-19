@@ -5,6 +5,7 @@ recent_ordered_dict.py
 Defines structures used by the httpcache module.
 """
 
+
 class RecentOrderedDict(dict):
     """
     A custom variant of the dictionary that ensures that the object most
