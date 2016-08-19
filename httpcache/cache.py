@@ -39,18 +39,14 @@ class HTTPCache(object):
 
     :param capacity: (Optional) The maximum capacity of the HTTP cache.
     """
-    def __init__(self, capacity=50):
+    def __init__(self, capacity=50, cache=None):
         #: The maximum capacity of the HTTP cache. When this many cache entries
         #: end up in the cache, the oldest entries are removed.
         self.capacity = capacity
 
-        #: The cache backing store. Cache entries are stored here as key-value
-        #: pairs. The key is the URL used to retrieve the cached response. The
-        #: value is a python dict, which stores three objects: the response
-        #: (keyed off of 'response'), the retrieval or creation date (keyed off
-        #: of 'creation') and the cache expiry date (keyed off of 'expiry').
-        #: This last value may be None.
-        self._cache = RecentOrderedDict()
+        if cache is None:
+            cache = RecentOrderedDict()
+        self._cache = cache
 
     def store(self, response):
         """
@@ -182,7 +178,11 @@ class HTTPCache(object):
         leaves the cache above capacity, begins deleting the least-used cache
         entries that are still valid until the cache has space.
         """
-        if len(self._cache) <= self.capacity:
+        try:
+            if len(self._cache) <= self.capacity:
+                return
+        except TypeError:
+            # memcached does not like to return everything
             return
 
         to_delete = len(self._cache) - self.capacity

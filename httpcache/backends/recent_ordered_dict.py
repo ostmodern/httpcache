@@ -1,5 +1,5 @@
 """
-structures.py
+recent_ordered_dict.py
 ~~~~~~~~~~~~~
 
 Defines structures used by the httpcache module.
