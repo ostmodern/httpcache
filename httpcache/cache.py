@@ -5,7 +5,7 @@ cache.py
 
 Contains the primary cache structure used in http-cache.
 """
-from .structures import RecentOrderedDict
+from .backends import RecentOrderedDict
 from .utils import (parse_date_header, build_date_header,
                     expires_from_cache_control, url_contains_query)
 from datetime import datetime
@@ -109,9 +109,10 @@ class HTTPCache(object):
             if url_contains_query(url):
                 return False
 
-        self._cache[url] = {'response': response,
-                            'creation': creation,
-                            'expiry': expiry}
+        self._cache.set(url, {
+            'response': response,
+            'creation': creation,
+            'expiry': expiry})
 
         self.__reduce_cache_count()
 
@@ -125,14 +126,11 @@ class HTTPCache(object):
 
         Returns None if there is no entry in the cache.
 
-        :param response: The 304 response to find the cached entry for. Should be a Requests :class:`Response <Response>`.
+        :param response: The 304 response to find the cached entry for.
+            Should be a Requests :class:`Response <Response>`.
         """
-        try:
-            cached_response = self._cache[response.url]['response']
-        except KeyError:
-            cached_response = None
-
-        return cached_response
+        cached_response = self._cache.get(response.url, {})
+        return cached_response.get('response')
 
     def retrieve(self, request):
         """
@@ -143,18 +141,18 @@ class HTTPCache(object):
         there is one that can be conditionally returned (if a 304 is returned),
         applies an If-Modified-Since header to the request and returns None.
 
-        :param request: The Requests :class:`PreparedRequest <PreparedRequest>` object.
+        :param request:
+            The Requests :class:`PreparedRequest <PreparedRequest>` object.
         """
         return_response = None
         url = request.url
 
-        try:
-            cached_response = self._cache[url]
-        except KeyError:
-            return None
+        cached_response = self._cache.get(url)
+        if not cached_response:
+            return
 
         if request.method not in NON_INVALIDATING_VERBS:
-            del self._cache[url]
+            self._cache.delete(url)
             return None
 
         if cached_response['expiry'] is None:
@@ -167,11 +165,10 @@ class HTTPCache(object):
             # We have an explicit expiry time. If we're earlier than the expiry
             # time, return the response.
             now = datetime.utcnow()
-
             if now <= cached_response['expiry']:
                 return_response = cached_response['response']
             else:
-                del self._cache[url]
+                self._cache.delete(url)
 
         return return_response
 
@@ -192,8 +189,8 @@ class HTTPCache(object):
         keys = list(self._cache.keys())
 
         for key in keys:
-            if self._cache[key]['expiry'] is None:
-                del self._cache[key]
+            if self._cache.get(key, {}).get('expiry') is None:
+                self._cache.delete(key)
                 to_delete -= 1
 
             if to_delete == 0:
@@ -202,6 +199,5 @@ class HTTPCache(object):
         keys = list(self._cache.keys())
 
         for i in range(to_delete):
-            del self._cache[keys[i]]
-
+            self._cache.delete(keys[i])
         return

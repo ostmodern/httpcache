@@ -27,7 +27,9 @@ class CachingHTTPAdapter(HTTPAdapter):
         Sends a PreparedRequest object, respecting RFC 2616's rules about HTTP
         caching. Returns a Response object that may have been cached.
 
-        :param request: The Requests :class:`PreparedRequest <PreparedRequest>` object to send.
+        :param request:
+            The Requests :class:`PreparedRequest <PreparedRequest>` object to
+            send.
         """
         cached_resp = self.cache.retrieve(request)
 
@@ -41,11 +43,13 @@ class CachingHTTPAdapter(HTTPAdapter):
         Builds a Response object from a urllib3 response. May involve returning
         a cached Response.
 
-        :param request: The Requests :class:`PreparedRequest <PreparedRequest>` object sent.
+        :param request:
+            The Requests :class:`PreparedRequest <PreparedRequest>`
+            object sent.
         :param response: The urllib3 response.
         """
-        resp = super(CachingHTTPAdapter, self).build_response(request,
-                                                              response)
+        resp = super(CachingHTTPAdapter, self).build_response(
+            request, response)
 
         if resp.status_code == 304:
             resp = self.cache.handle_304(resp)

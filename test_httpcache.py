@@ -21,6 +21,13 @@ class TestHTTPCache(object):
         rc = cache.store(resp)
         assert rc
 
+    def test_store_responses_correctly(self):
+        resp = MockRequestsResponse()
+        cache = httpcache.HTTPCache()
+
+        cache.store(resp)
+        assert cache._cache.get(resp.url)
+
     def test_dont_store_non_200_responses(self):
         resp = MockRequestsResponse(status_code=403)
         cache = httpcache.HTTPCache()

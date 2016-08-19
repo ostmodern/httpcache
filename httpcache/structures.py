@@ -57,3 +57,18 @@ class RecentOrderedDict(dict):
         c = RecentOrderedDict()
         c._data = self._data.copy()
         c._order = self._order[:]
+
+    def get(self, key, return_value=None):
+        try:
+            return self.__getitem__(key)
+        except KeyError:
+            return return_value
+
+    def set(self, key, value):
+        self.__setitem__(key, value)
+
+    def delete(self, key):
+        """
+        Keep consistency with memcached approach
+        """
+        self.__delitem__(key)
