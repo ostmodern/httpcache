@@ -5,10 +5,12 @@ cache.py
 
 Contains the primary cache structure used in http-cache.
 """
-from .backends import RecentOrderedDict
-from .utils import (parse_date_header, build_date_header,
-                    expires_from_cache_control, url_contains_query)
 from datetime import datetime
+
+from .backends import RecentOrderedDict
+from .utils import (
+    build_date_header, expires_from_cache_control, parse_date_header,
+    url_contains_query)
 
 
 # RFC 2616 specifies that we can cache 200 OK, 203 Non Authoritative,
