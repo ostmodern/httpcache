@@ -1,5 +1,7 @@
+flake8
 ipdb
 mockcache
 py
 pytest
+pytest-cov
 requests
