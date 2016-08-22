@@ -16,11 +16,11 @@ class CachingHTTPAdapter(HTTPAdapter):
 
     :param capacity: The maximum capacity of the backing cache.
     """
-    def __init__(self, capacity=50, **kwargs):
+    def __init__(self, capacity=50, cache=None, **kwargs):
         super(CachingHTTPAdapter, self).__init__(**kwargs)
 
         #: The HTTP Cache backing the adapter.
-        self.cache = HTTPCache(capacity=capacity)
+        self.cache = HTTPCache(capacity=capacity, cache=cache)
 
     def send(self, request, **kwargs):
         """
