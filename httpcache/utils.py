@@ -66,8 +66,8 @@ def expires_from_cache_control(header, current_time):
     Returns None to indicate that a request must not be cached.
     """
     # Cache control header values are made of multiple comma separated fields.
-    # Splitting them like this is probably a bad idea, but I'm going to roll with
-    # it for now. We'll come back to it.
+    # Splitting them like this is probably a bad idea, but I'm going to roll
+    # with it for now. We'll come back to it.
     fields = header.split(', ')
     duration = None
 
