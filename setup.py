@@ -4,7 +4,7 @@ import os
 import sys
 
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 except ImportError:
     from distutils.core import setup
 
@@ -25,7 +25,7 @@ if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist upload')
     sys.exit()
 
-packages = ['httpcache']
+packages = find_packages(exclude=['docs'])
 
 requires = ['requests>=1.2.0']
 
