@@ -58,6 +58,8 @@ class HTTPCache(object):
 
         :param response: Requests :class:`Response <Response>` object to cache.
         """
+
+        # import ipdb; ipdb.set_trace()
         # Define an internal utility function.
         def date_header_or_default(header_name, default, response):
             try:
@@ -101,12 +103,16 @@ class HTTPCache(object):
         if expiry is not None and expiry <= creation:
             return False
 
+        # Get content lanugage header
+        cl = response.headers.get('Content-Language', None)
+
         # If there's a query portion of the url and it's a GET, don't cache
         # this unless explicitly instructed to.
         if expiry is None and response.request.method == 'GET':
             if url_contains_query(url):
                 return False
 
+        key = '{},{}'.format(url, cl)
         self._cache.set(url, {
             'response': response,
             'creation': creation,
@@ -142,10 +148,16 @@ class HTTPCache(object):
         :param request:
             The Requests :class:`PreparedRequest <PreparedRequest>` object.
         """
+        # import ipdb; ipdb.set_trace()
+
         return_response = None
         url = request.url
 
-        cached_response = self._cache.get(url)
+        al = request.headers.get('Accept-Language', None)
+        al = al.strip(', *')
+        key = '{},{}'.format(url, al)
+
+        cached_response = self._cache.get(key)
         if not cached_response:
             return
 
