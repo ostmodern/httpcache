@@ -6,6 +6,7 @@ cache.py
 Contains the primary cache structure used in http-cache.
 """
 from datetime import datetime
+import hashlib
 
 from .backends import RecentOrderedDict
 from .utils import (
@@ -50,7 +51,7 @@ class HTTPCache(object):
             cache = RecentOrderedDict()
         self._cache = cache
 
-    def store(self, response):
+    def store(self, response, request):
         """
         Takes an HTTP response object and stores it in the cache according to
         RFC 2616. Returns a boolean value indicating whether the response was
@@ -58,7 +59,6 @@ class HTTPCache(object):
 
         :param response: Requests :class:`Response <Response>` object to cache.
         """
-
         # Define an internal utility function.
         def date_header_or_default(header_name, default, response):
             try:
@@ -103,7 +103,7 @@ class HTTPCache(object):
             return False
 
         # Get content lanugage header
-        cl = response.headers.get('Content-Language', None)
+        al = request.headers.get('Accept-Language', None)
 
         # If there's a query portion of the url and it's a GET, don't cache
         # this unless explicitly instructed to.
@@ -111,7 +111,7 @@ class HTTPCache(object):
             if url_contains_query(url):
                 return False
 
-        key = '{},{}'.format(url, cl)
+        key = self.make_key(url, al)
         self._cache.set(url, {
             'response': response,
             'creation': creation,
@@ -120,6 +120,11 @@ class HTTPCache(object):
         self.__reduce_cache_count()
 
         return True
+
+    def make_key(self, *data):
+        data = ''.join(data)
+        key = hashlib.sha224(data.encode('utf-8')).hexdigest()
+        return key
 
     def handle_304(self, response):
         """
@@ -149,10 +154,9 @@ class HTTPCache(object):
         """
         return_response = None
         url = request.url
-
         al = request.headers.get('Accept-Language', None)
-        al = al.strip(', *')
-        key = '{},{}'.format(url, al)
+
+        key = self.make_key(url, al)
 
         cached_response = self._cache.get(key)
         if not cached_response:
