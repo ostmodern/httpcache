@@ -54,6 +54,6 @@ class CachingHTTPAdapter(HTTPAdapter):
         if resp.status_code == 304:
             resp = self.cache.handle_304(resp)
         else:
-            self.cache.store(resp)
+            self.cache.store(resp, request=request)
 
         return resp
