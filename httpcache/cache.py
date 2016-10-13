@@ -103,7 +103,7 @@ class HTTPCache(object):
             return False
 
         # Get content lanugage header
-        al = request.headers.get('Accept-Language', None)
+        al = request.headers.get('Accept-Language') or ''
 
         # If there's a query portion of the url and it's a GET, don't cache
         # this unless explicitly instructed to.
@@ -154,7 +154,7 @@ class HTTPCache(object):
         """
         return_response = None
         url = request.url
-        al = request.headers.get('Accept-Language', None)
+        al = request.headers.get('Accept-Language') or ''
 
         key = self.make_key(url, al)
 
