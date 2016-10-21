@@ -73,3 +73,6 @@ class RecentOrderedDict(dict):
         Keep consistency with memcached approach
         """
         self.__delitem__(key)
+
+    def __repr__(self):
+        return repr(self._data)
