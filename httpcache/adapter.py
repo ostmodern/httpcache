@@ -52,7 +52,7 @@ class CachingHTTPAdapter(HTTPAdapter):
             request, response)
 
         if resp.status_code == 304:
-            resp = self.cache.handle_304(resp)
+            resp = self.cache.handle_304(resp, request)
         else:
             self.cache.store(resp, request=request)
 

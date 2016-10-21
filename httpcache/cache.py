@@ -112,7 +112,7 @@ class HTTPCache(object):
                 return False
 
         key = self.make_key(url, al)
-        self._cache.set(url, {
+        self._cache.set(key, {
             'response': response,
             'creation': creation,
             'expiry': expiry})
@@ -126,7 +126,7 @@ class HTTPCache(object):
         key = hashlib.sha224(data.encode('utf-8')).hexdigest()
         return key
 
-    def handle_304(self, response):
+    def handle_304(self, response, request):
         """
         Given a 304 response, retrieves the cached entry. This unconditionally
         returns the cached entry, so it can be used when the 'intelligent'
@@ -137,7 +137,10 @@ class HTTPCache(object):
         :param response: The 304 response to find the cached entry for.
             Should be a Requests :class:`Response <Response>`.
         """
-        cached_response = self._cache.get(response.url, {})
+        url = request.url
+        al = request.headers.get('Accept-Language') or ''
+        key = self.make_key(url, al)
+        cached_response = self._cache.get(key, {})
         return cached_response.get('response')
 
     def retrieve(self, request):
@@ -163,7 +166,7 @@ class HTTPCache(object):
             return
 
         if request.method not in NON_INVALIDATING_VERBS:
-            self._cache.delete(url)
+            self._cache.delete(key)
             return None
 
         if cached_response['expiry'] is None:
@@ -179,7 +182,7 @@ class HTTPCache(object):
             if now <= cached_response['expiry']:
                 return_response = cached_response['response']
             else:
-                self._cache.delete(url)
+                self._cache.delete(key)
 
         return return_response
 
